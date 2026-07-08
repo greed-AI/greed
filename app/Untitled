@@ -1,0 +1,26 @@
+Create ONLY ONE new page.
+
+File to create:
+app/welcome/page.tsx
+
+Do NOT edit app/page.tsx.
+Do NOT edit any existing files.
+Do NOT create any other pages.
+
+Page design:
+- Premium black and gold Greed style
+- Centered layout
+- GREED logo
+- Title: Private Investment Intelligence
+- Subtitle: Not for everyone. For serious investors.
+- Show membership status: 347 / 1000 Founder Spots Filled
+- Add two buttons:
+  Request Membership
+  Sign In
+
+Buttons can link to:
+- /apply
+- /sign-in
+
+After finishing, tell me only:
+Created app/welcome/page.tsx
