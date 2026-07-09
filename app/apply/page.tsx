@@ -1,5 +1,6 @@
 "use client";
 
+import { signUp } from "@/lib/auth";
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -26,22 +27,38 @@ export default function ApplyPage() {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [country, setCountry] = useState("");
   const [experience, setExperience] = useState("");
   const [reason, setReason] = useState("");
   const [accepted, setAccepted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     if (!accepted) return;
     setSubmitting(true);
-    setTimeout(() => router.push("/application-success"), 600);
+    setError(null);
+
+    const { error } = await signUp(email.trim(), password, {
+      fullName: fullName.trim(),
+    });
+
+    if (error) {
+      console.error("Signup error:", error);
+      setError(error.message);
+      setSubmitting(false);
+      return;
+    }
+
+    router.push("/application-success");
   }
 
   const canSubmit =
     fullName.trim() &&
     email.trim() &&
+    password.trim() &&
     country &&
     experience &&
     reason.trim() &&
@@ -107,10 +124,35 @@ export default function ApplyPage() {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (error) setError(null);
+                  }}
                   placeholder="you@email.com"
                   required
                   autoComplete="email"
+                  className={inputClass}
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="password"
+                  className="mb-2 block text-[10px] font-medium uppercase tracking-wider text-white/35"
+                >
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (error) setError(null);
+                  }}
+                  placeholder="••••••••"
+                  required
+                  autoComplete="new-password"
                   className={inputClass}
                 />
               </div>
@@ -199,6 +241,15 @@ export default function ApplyPage() {
                   I understand Greed is a private premium membership.
                 </span>
               </label>
+
+              {error && (
+                <p
+                  role="alert"
+                  className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-left text-xs leading-relaxed text-white/45"
+                >
+                  {error}
+                </p>
+              )}
 
               <button
                 type="submit"

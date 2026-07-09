@@ -1,8 +1,23 @@
 "use client";
 
+import { signIn } from "@/lib/auth";
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+
+function getSignInErrorMessage(message: string): string {
+  const normalized = message.toLowerCase();
+
+  if (normalized.includes("invalid login credentials")) {
+    return "Invalid email or password. Please verify your credentials and try again.";
+  }
+
+  if (normalized.includes("email not confirmed")) {
+    return "Your email has not been verified. Please check your inbox before signing in.";
+  }
+
+  return "Unable to sign in at this time. Please try again shortly.";
+}
 
 export default function SignInPage() {
   const router = useRouter();
@@ -10,11 +25,22 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showForgotMessage, setShowForgotMessage] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setSubmitting(true);
-    setTimeout(() => router.push("/"), 500);
+    setError(null);
+
+    const { error: authError } = await signIn(email.trim(), password);
+
+    if (authError) {
+      setError(getSignInErrorMessage(authError.message));
+      setSubmitting(false);
+      return;
+    }
+
+    router.push("/dashboard");
   }
 
   const canSubmit = email.trim() && password.trim() && !submitting;
@@ -59,7 +85,10 @@ export default function SignInPage() {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (error) setError(null);
+                  }}
                   placeholder="you@email.com"
                   required
                   autoComplete="email"
@@ -78,7 +107,10 @@ export default function SignInPage() {
                   id="password"
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (error) setError(null);
+                  }}
                   placeholder="••••••••"
                   required
                   autoComplete="current-password"
@@ -101,6 +133,15 @@ export default function SignInPage() {
                   </p>
                 )}
               </div>
+
+              {error && (
+                <p
+                  role="alert"
+                  className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-left text-xs leading-relaxed text-white/45"
+                >
+                  {error}
+                </p>
+              )}
 
               <button
                 type="submit"
