@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateDemoAnalysis } from "@/lib/demo-analysis";
 import { generateStockAnalysis } from "@/lib/generate-analysis";
+import { fetchStockData } from "@/lib/stock-data";
+import { generateStockScoreAnalysis } from "@/lib/stock-score";
 import type { AnalysisApiError, AnalysisResponse } from "@/lib/types/analysis";
 
 export const runtime = "nodejs";
@@ -33,7 +35,7 @@ function logFallbackReason(error: unknown): void {
     return;
   }
 
-  console.warn("[/api/analyze] Demo fallback: OpenAI request failed", error);
+  console.warn("[/api/analyze] Demo fallback: request failed", error);
 }
 
 export async function POST(request: NextRequest) {
@@ -46,17 +48,36 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const ticker = body.ticker.trim();
+  const ticker = body.ticker.trim().toUpperCase();
 
   try {
-    const analysis = await generateStockAnalysis(ticker);
-    const response: AnalysisResponse = { ...analysis, isDemo: false };
+    const stockData = await fetchStockData(ticker);
+    console.log("[/api/analyze] Stock data:", stockData);
+  
+    let analysis;
+  
+    try {
+      analysis = await generateStockAnalysis(ticker);
+    } catch (error) {
+      console.warn("OpenAI unavailable. Using local analysis.");
+      analysis = generateStockScoreAnalysis(stockData);
+    }
+  
+    const response: AnalysisResponse = {
+      ...analysis,
+      isDemo: false,
+    };
+  
     return NextResponse.json(response);
   } catch (error) {
     logFallbackReason(error);
-
+  
     const demo = generateDemoAnalysis(ticker);
-    const response: AnalysisResponse = { ...demo, isDemo: true };
+    const response: AnalysisResponse = {
+      ...demo,
+      isDemo: true,
+    };
+  
     return NextResponse.json(response);
   }
 }

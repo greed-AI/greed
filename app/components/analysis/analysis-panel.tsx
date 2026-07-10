@@ -34,6 +34,7 @@ type AnalysisPanelProps = {
   recentHistory: RecentAnalysisItem[];
   watchlist: WatchlistItem[];
   onAddToWatchlist: (analysis: StockAnalysis) => void;
+  onRemoveFromWatchlist: (ticker: string) => void;
 };
 
 export function AnalysisPanel({
@@ -42,6 +43,7 @@ export function AnalysisPanel({
   recentHistory,
   watchlist,
   onAddToWatchlist,
+  onRemoveFromWatchlist,
 }: AnalysisPanelProps) {
   if (
     viewState === "idle" &&

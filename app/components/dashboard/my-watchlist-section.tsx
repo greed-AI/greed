@@ -3,17 +3,32 @@ import {
   DecisionBadge,
   SectionLabel,
 } from "@/app/components/ui/primitives";
-import { WhyButton } from "@/app/components/ui/why-button";
-import { MY_WATCHLIST } from "@/lib/dashboard-data";
+
+
 import { simplifyDecision } from "@/lib/decision-why";
 
-export function MyWatchlistSection() {
+type WatchlistItem = {
+  ticker: string;
+  company: string;
+  greedScore: number;
+  risk: string;
+  confidence?: number;
+  why?: string;
+};
+
+export function MyWatchlistSection({
+  watchlist,
+  onRemove,
+}: {
+  watchlist: WatchlistItem[];
+  onRemove: (ticker: string) => void;
+}) {
   return (
     <section>
       <SectionLabel>My Watchlist</SectionLabel>
 
       <ul className="mt-4 flex flex-col gap-3">
-        {MY_WATCHLIST.map((stock) => {
+      {watchlist.map((stock) => {
           const decision = simplifyDecision(stock.greedScore);
 
           return (
@@ -55,8 +70,16 @@ export function MyWatchlistSection() {
                         </p>
                       </div>
                     </div>
+                    <div className="mt-3 flex items-center gap-3">
+  <button
+    type="button"
+    onClick={() => onRemove(stock.ticker)}
+    className="text-xs text-red-400 hover:text-red-300 transition-colors"
+  >
+    Remove
+  </button>
+</div>
 
-                    <WhyButton content={stock.why} />
                   </div>
                 </div>
               </CardShell>

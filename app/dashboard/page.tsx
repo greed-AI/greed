@@ -12,6 +12,7 @@ import { getUser, signOut } from "@/lib/auth";
 import { fetchStockAnalysis } from "@/lib/client/fetch-analysis";
 import { generateDemoAnalysis } from "@/lib/demo-analysis";
 import type { AnalysisResponse, StockAnalysis } from "@/lib/types/analysis";
+import { addWatchlistItem, getWatchlistItems, deleteWatchlistItem } from "@/lib/watchlist";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -69,6 +70,19 @@ export default function DashboardPage() {
     });
   }, []);
 
+  useEffect(() => {
+    void getUser().then(async ({ user }) => {
+      if (!user) return;
+  
+      try {
+        const items = await getWatchlistItems(user.id);
+        setWatchlist(items);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+  }, []);
+  
   function addToHistory(analysis: StockAnalysis) {
     const entry: RecentAnalysisItem = {
       ticker: analysis.ticker,
@@ -83,7 +97,24 @@ export default function DashboardPage() {
     });
   }
 
-  function addToWatchlist(analysis: StockAnalysis) {
+  async function addToWatchlist(analysis: StockAnalysis) {
+    const { user } = await getUser();
+
+    if (!user) return;
+
+
+    try {
+      await addWatchlistItem({
+        userId: user.id,
+        ticker: analysis.ticker,
+        company: analysis.company,
+        greedScore: analysis.greedScore,
+        risk: analysis.risk,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+
     setWatchlist((prev) => {
       if (prev.some((item) => item.ticker === analysis.ticker)) {
         return prev;
@@ -99,6 +130,21 @@ export default function DashboardPage() {
         },
       ];
     });
+  }
+  async function removeFromWatchlist(ticker: string) {
+    const { user } = await getUser();
+  
+    if (!user) return;
+  
+    try {
+      await deleteWatchlistItem(user.id, ticker);
+  
+      setWatchlist((prev) =>
+        prev.filter((item) => item.ticker !== ticker)
+      );
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   function handleAnalyze(event: FormEvent) {
@@ -180,10 +226,14 @@ export default function DashboardPage() {
               recentHistory={recentHistory}
               watchlist={watchlist}
               onAddToWatchlist={addToWatchlist}
+              onRemoveFromWatchlist={removeFromWatchlist}
             />
           </div>
 
-          <MyWatchlistSection />
+          <MyWatchlistSection
+  watchlist={watchlist}
+  onRemove={(ticker) => void removeFromWatchlist(ticker)}
+/>
         </div>
       </main>
 
