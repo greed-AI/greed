@@ -5,7 +5,8 @@ import {
 } from "@/app/components/ui/primitives";
 
 
-import { simplifyDecision } from "@/lib/decision-why";
+import { simplifyDecision, type WhyContent } from "@/lib/decision-why";
+import { WhyButton } from "@/app/components/ui/why-button";
 
 type WatchlistItem = {
   ticker: string;
@@ -13,7 +14,7 @@ type WatchlistItem = {
   greedScore: number;
   risk: string;
   confidence?: number;
-  why?: string;
+  why?: WhyContent;
 };
 
 export function MyWatchlistSection({
@@ -71,6 +72,11 @@ export function MyWatchlistSection({
                       </div>
                     </div>
                     <div className="mt-3 flex items-center gap-3">
+                    {stock.why && (
+  <WhyButton
+    content={stock.why}
+  />
+)}
   <button
     type="button"
     onClick={() => onRemove(stock.ticker)}

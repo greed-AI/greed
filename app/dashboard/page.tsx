@@ -13,6 +13,7 @@ import { fetchStockAnalysis } from "@/lib/client/fetch-analysis";
 import { generateDemoAnalysis } from "@/lib/demo-analysis";
 import type { AnalysisResponse, StockAnalysis } from "@/lib/types/analysis";
 import { addWatchlistItem, getWatchlistItems, deleteWatchlistItem } from "@/lib/watchlist";
+import { buildWhyContent } from "@/lib/decision-why";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -104,13 +105,22 @@ export default function DashboardPage() {
 
 
     try {
-      await addWatchlistItem({
-        userId: user.id,
-        ticker: analysis.ticker,
-        company: analysis.company,
-        greedScore: analysis.greedScore,
-        risk: analysis.risk,
-      });
+      const whyContent = buildWhyContent(analysis);
+
+console.log("WATCHLIST SAVE DATA:", {
+  ticker: analysis.ticker,
+  confidence: analysis.confidence,
+  why: whyContent,
+});
+await addWatchlistItem({
+  userId: user.id,
+  ticker: analysis.ticker,
+  company: analysis.company,
+  greedScore: analysis.greedScore,
+  risk: analysis.risk,
+  confidence: analysis.confidence,
+  why: whyContent,
+});
     } catch (error) {
       console.error(error);
     }
@@ -127,6 +137,8 @@ export default function DashboardPage() {
           company: analysis.company,
           greedScore: analysis.greedScore,
           risk: analysis.risk,
+          confidence: analysis.confidence,
+          why: buildWhyContent(analysis),
         },
       ];
     });
