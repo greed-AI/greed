@@ -14,5 +14,9 @@ export async function fetchStockAnalysis(
     throw new Error(errorBody.error || "Analysis request failed");
   }
 
-  return response.json() as Promise<AnalysisResponse>;
+  const data = (await response.json()) as AnalysisResponse;
+
+  console.log("[CLIENT] ANALYSIS RESPONSE:", data);
+
+  return data;
 }

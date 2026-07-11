@@ -1,14 +1,23 @@
 import { getDecisionLabel, type GreedDecisionLabel } from "@/lib/greed-decision";
 
-export type StrategyHorizon = "today" | "week" | "month" | "year";
+export type StrategyHorizon =
+  | "today"
+  | "week"
+  | "month"
+  | "year"
+  | "oneWeek"
+  | "oneMonth"
+  | "oneYear";
 
-export type StrategyAction =
+  export type StrategyAction =
   | "ACCUMULATE"
   | "BUY"
   | "HOLD"
   | "WATCH"
+  | "WAIT"
   | "TRIM"
-  | "EXIT";
+  | "EXIT"
+  | "STRONG BUY";
 
 export type AIStrategyItem = {
   horizon: StrategyHorizon;
@@ -26,8 +35,10 @@ const ACTION_STYLE: Record<
   BUY: { signal: "Add exposure", intensity: 4 },
   HOLD: { signal: "Stay positioned", intensity: 3 },
   WATCH: { signal: "Wait for clarity", intensity: 2 },
+  WAIT: { signal: "Wait for clarity", intensity: 2 },
   TRIM: { signal: "Reduce size", intensity: 2 },
   EXIT: { signal: "Close exposure", intensity: 1 },
+  "STRONG BUY": { signal: "Strong entry", intensity: 5 },
 };
 
 function actionForHorizon(
@@ -73,6 +84,9 @@ const HORIZON_LABELS: Record<StrategyHorizon, string> = {
   week: "1 Week",
   month: "1 Month",
   year: "1 Year",
+  oneWeek: "1 Week",
+  oneMonth: "1 Month",
+  oneYear: "1 Year",
 };
 
 export function buildAIStrategy(greedScore: number): AIStrategyItem[] {

@@ -1,3 +1,5 @@
+import type { StockAnalysis } from "@/lib/types/analysis";
+
 type StockData = {
     ticker: string;
     price: number;
@@ -7,7 +9,9 @@ type StockData = {
     latestTradingDay: string;
   };
   
-  export function generateStockScoreAnalysis(stock: StockData) {
+  export function generateStockScoreAnalysis(
+    stock: StockData,
+  ): StockAnalysis {
     const percent = Number(stock.changePercent.replace("%", ""));
   
     let greedScore = 50;
@@ -46,5 +50,44 @@ type StockData = {
       risk,
       confidence,
       summary: `${stock.ticker} is trading at $${stock.price}. Today's move is ${stock.changePercent}, with volume of ${stock.volume.toLocaleString()}.`,
+      strategy: {
+        today:
+          greedScore >= 80
+            ? "STRONG BUY"
+            : greedScore >= 65
+              ? "BUY"
+              : greedScore >= 45
+                ? "HOLD"
+                : greedScore >= 30
+                  ? "WAIT"
+                  : "TRIM",
+      
+        oneWeek:
+          greedScore >= 75
+            ? "BUY"
+            : greedScore >= 55
+              ? "HOLD"
+              : greedScore >= 40
+                ? "WAIT"
+                : "TRIM",
+      
+        oneMonth:
+          greedScore >= 70
+            ? "BUY"
+            : greedScore >= 50
+              ? "HOLD"
+              : greedScore >= 35
+                ? "WAIT"
+                : "TRIM",
+      
+        oneYear:
+          greedScore >= 65
+            ? "BUY"
+            : greedScore >= 45
+              ? "HOLD"
+              : greedScore >= 30
+                ? "WAIT"
+                : "TRIM",
+      },
     };
   }

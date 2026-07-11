@@ -102,6 +102,12 @@ export default function DashboardPage() {
     const { user } = await getUser();
 
     if (!user) return;
+    
+    const alreadyExists = watchlist.some(
+      (item) => item.ticker === analysis.ticker
+    );
+    
+    if (alreadyExists) return;
 
 
     try {

@@ -1,5 +1,5 @@
-import { buildAIStrategy, type AIStrategyItem } from "@/lib/ai-strategy";
-
+import type { AIStrategyItem } from "@/lib/ai-strategy";
+import type { AIStrategy } from "@/lib/types/analysis";
 const ACTION_COLORS: Record<
   AIStrategyItem["action"],
   { border: string; text: string; glow: string }
@@ -13,6 +13,16 @@ const ACTION_COLORS: Record<
     border: "border-emerald-400/20",
     text: "text-emerald-200/90",
     glow: "from-emerald-500/8",
+  },
+  "STRONG BUY": {
+  border: "border-emerald-400/30",
+  text: "text-emerald-100",
+  glow: "from-emerald-500/12",
+},
+  WAIT: {
+    border: "border-orange-400/25",
+    text: "text-orange-100",
+    glow: "from-orange-500/10",
   },
   HOLD: {
     border: "border-amber-400/25",
@@ -72,9 +82,41 @@ function StrategyCard({ item }: { item: AIStrategyItem }) {
   );
 }
 
-export function AIStrategySection({ greedScore }: { greedScore: number }) {
-  const strategy = buildAIStrategy(greedScore);
-
+export function AIStrategySection({
+  strategy,
+}: {
+  strategy: AIStrategy;
+}) {
+  const strategyItems: AIStrategyItem[] = [
+    {
+      horizon: "today",
+      label: "Today",
+      action: strategy.today,
+      signal: "AI-generated short-term strategy",
+      intensity: 3,
+    },
+    {
+      horizon: "oneWeek",
+      label: "1 Week",
+      action: strategy.oneWeek,
+      signal: "AI-generated weekly strategy",
+      intensity: 3,
+    },
+    {
+      horizon: "oneMonth",
+      label: "1 Month",
+      action: strategy.oneMonth,
+      signal: "AI-generated monthly strategy",
+      intensity: 3,
+    },
+    {
+      horizon: "oneYear",
+      label: "1 Year",
+      action: strategy.oneYear,
+      signal: "AI-generated long-term strategy",
+      intensity: 3,
+    },
+  ];
   return (
     <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-white/2">
       <div
@@ -93,7 +135,7 @@ export function AIStrategySection({ greedScore }: { greedScore: number }) {
         </div>
 
         <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {strategy.map((item) => (
+        {strategyItems.map((item) => (
             <StrategyCard key={item.horizon} item={item} />
           ))}
         </div>

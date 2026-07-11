@@ -134,7 +134,7 @@ function DecisionPlatformSection({ result }: { result: StockAnalysis }) {
           why={buildWhyContent(result)}
         />
         <GreedRadarSection analysis={result} />
-        <AIStrategySection greedScore={result.greedScore} />
+        <AIStrategySection strategy={result.strategy} />
       </div>
     </section>
   );

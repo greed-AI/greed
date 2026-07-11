@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
     try {
       analysis = await generateStockAnalysis(ticker);
     } catch (error) {
+      console.error("[/api/analyze] OPENAI ERROR:", error);
       console.warn("OpenAI unavailable. Using local analysis.");
       analysis = generateStockScoreAnalysis(stockData);
     }
@@ -67,7 +68,12 @@ export async function POST(request: NextRequest) {
       ...analysis,
       isDemo: false,
     };
-  
+    console.log("[/api/analyze] RESPONSE:", {
+      ticker: response.ticker,
+      isDemo: response.isDemo,
+      strategy: response.strategy,
+    });
+
     return NextResponse.json(response);
   } catch (error) {
     logFallbackReason(error);
@@ -77,7 +83,12 @@ export async function POST(request: NextRequest) {
       ...demo,
       isDemo: true,
     };
-  
+    console.log("[/api/analyze] DEMO RESPONSE:", {
+      ticker: response.ticker,
+      isDemo: response.isDemo,
+      strategy: response.strategy,
+    });
+    
     return NextResponse.json(response);
   }
 }
