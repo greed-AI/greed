@@ -152,6 +152,14 @@ export default function DashboardPage() {
     
     if (alreadyExists) return;
 
+    if (membership === "FREE" && watchlist.length >= 3) {
+      alert(
+        "Free members can save up to 3 stocks. Upgrade to Royal for unlimited watchlists."
+      );
+      router.push("/pricing");
+      return;
+    }
+
 
     try {
       const whyContent = buildWhyContent(analysis);

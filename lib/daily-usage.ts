@@ -1,6 +1,6 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-export const FREE_DAILY_ANALYSIS_LIMIT = 3;
+export const FREE_DAILY_ANALYSIS_LIMIT = 1;
 
 export type DailyUsageResult = {
   allowed: boolean;
