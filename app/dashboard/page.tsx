@@ -283,14 +283,24 @@ await addWatchlistItem({
         <span className="text-sm font-medium tracking-[0.35em] text-gold">
           GREED
         </span>
-        <button
-          type="button"
-          onClick={() => void handleSignOut()}
-          disabled={signingOut}
-          className="text-xs text-white/30 transition-colors hover:text-gold-light disabled:opacity-50"
-        >
-          {signingOut ? "Signing out…" : "Sign Out"}
-        </button>
+        <div className="flex items-center gap-4">
+  <button
+    type="button"
+    onClick={() => router.push("/billing")}
+    className="text-xs text-white/60 transition hover:text-gold-light"
+  >
+    Billing
+  </button>
+
+  <button
+    type="button"
+    onClick={() => void handleSignOut()}
+    disabled={signingOut}
+    className="text-xs text-white/30 transition hover:text-gold-light disabled:opacity-50"
+  >
+    {signingOut ? "Signing out…" : "Sign Out"}
+  </button>
+</div>
       </header>
 
       <main className="relative z-10 mx-auto w-full max-w-2xl px-6 pb-16 sm:px-8">
