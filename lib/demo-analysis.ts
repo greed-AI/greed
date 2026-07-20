@@ -1,6 +1,6 @@
-import type { StockAnalysis } from "@/lib/types/analysis";
+import type { AIStrategy, StockAnalysis } from "@/lib/types/analysis";
 
-type DemoEntry = Omit<StockAnalysis, "ticker">;
+type DemoEntry = Omit<StockAnalysis, "ticker" | "strategy">;
 
 const DEMO_BY_KEY: Record<string, DemoEntry & { symbol: string }> = {
   tsla: {
@@ -119,7 +119,89 @@ function hashTicker(input: string): number {
 function toTitleCase(value: string): string {
   return value.replace(/\b\w/g, (char) => char.toUpperCase());
 }
+function buildDemoStrategy(greedScore: number): AIStrategy {
+  return {
+    today: {
+      action:
+        greedScore >= 80
+          ? "STRONG BUY"
+          : greedScore >= 65
+            ? "BUY"
+            : greedScore >= 45
+              ? "HOLD"
+              : greedScore >= 30
+                ? "WAIT"
+                : "TRIM",
+      reason:
+        greedScore >= 80
+          ? "The high Greed Score supports a strong short-term stance."
+          : greedScore >= 65
+            ? "The Greed Score supports a constructive short-term stance."
+            : greedScore >= 45
+              ? "Mixed conditions favor holding in the short term."
+              : greedScore >= 30
+                ? "The score suggests waiting for clearer confirmation."
+                : "Weak conditions support reducing short-term exposure.",
+    },
 
+    oneWeek: {
+      action:
+        greedScore >= 75
+          ? "BUY"
+          : greedScore >= 55
+            ? "HOLD"
+            : greedScore >= 40
+              ? "WAIT"
+              : "TRIM",
+      reason:
+        greedScore >= 75
+          ? "The current score supports a positive one-week outlook."
+          : greedScore >= 55
+            ? "The one-week outlook remains balanced."
+            : greedScore >= 40
+              ? "More confirmation is needed over the coming week."
+              : "Weak conditions support trimming over one week.",
+    },
+
+    oneMonth: {
+      action:
+        greedScore >= 70
+          ? "BUY"
+          : greedScore >= 50
+            ? "HOLD"
+            : greedScore >= 35
+              ? "WAIT"
+              : "TRIM",
+      reason:
+        greedScore >= 70
+          ? "The score supports a constructive one-month position."
+          : greedScore >= 50
+            ? "The one-month outlook favors maintaining the position."
+            : greedScore >= 35
+              ? "The score favors waiting for stronger confirmation."
+              : "Weak conditions support reducing medium-term exposure.",
+    },
+
+    oneYear: {
+      action:
+        greedScore >= 65
+          ? "BUY"
+          : greedScore >= 45
+            ? "HOLD"
+            : greedScore >= 30
+              ? "WAIT"
+              : "TRIM",
+      reason:
+        greedScore >= 65
+          ? "The score supports a positive long-term stance."
+          : greedScore >= 45
+            ? "The long-term outlook remains balanced."
+            : greedScore >= 30
+              ? "The score suggests waiting before taking a long-term position."
+              : "Weak conditions support reducing long-term exposure.",
+    },
+  };
+}
 function buildGenericDemo(ticker: string): StockAnalysis {
   const key = ticker.trim().toLowerCase();
   const hash = hashTicker(key);
@@ -139,6 +221,7 @@ function buildGenericDemo(ticker: string): StockAnalysis {
     risk,
     confidence,
     summary: `${company} shows ${momentum.toLowerCase()} momentum with ${risk.toLowerCase()} overall risk. Greed recommends monitoring key levels before sizing a position.`,
+    strategy: buildDemoStrategy(greedScore),
   };
 }
 
@@ -148,7 +231,12 @@ export function generateDemoAnalysis(ticker: string): StockAnalysis {
 
   if (known) {
     const { symbol, ...data } = known;
-    return { ticker: symbol, ...data };
+  
+    return {
+      ticker: symbol,
+      ...data,
+      strategy: buildDemoStrategy(data.greedScore),
+    };
   }
 
   return buildGenericDemo(ticker);

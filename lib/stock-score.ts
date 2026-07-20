@@ -51,43 +51,85 @@ type StockData = {
       confidence,
       summary: `${stock.ticker} is trading at $${stock.price}. Today's move is ${stock.changePercent}, with volume of ${stock.volume.toLocaleString()}.`,
       strategy: {
-        today:
-          greedScore >= 80
-            ? "STRONG BUY"
-            : greedScore >= 65
+        today: {
+          action:
+            greedScore >= 80
+              ? "STRONG BUY"
+              : greedScore >= 65
+                ? "BUY"
+                : greedScore >= 45
+                  ? "HOLD"
+                  : greedScore >= 30
+                    ? "WAIT"
+                    : "TRIM",
+          reason:
+            greedScore >= 80
+              ? "Very strong score conditions support an aggressive short-term stance."
+              : greedScore >= 65
+                ? "Positive score conditions support a constructive short-term stance."
+                : greedScore >= 45
+                  ? "Mixed score conditions favor holding rather than adding exposure."
+                  : greedScore >= 30
+                    ? "Weak score conditions suggest waiting for clearer confirmation."
+                    : "Very weak score conditions support reducing exposure.",
+        },
+      
+        oneWeek: {
+          action:
+            greedScore >= 75
+              ? "BUY"
+              : greedScore >= 55
+                ? "HOLD"
+                : greedScore >= 40
+                  ? "WAIT"
+                  : "TRIM",
+          reason:
+            greedScore >= 75
+              ? "The current score supports a positive one-week outlook."
+              : greedScore >= 55
+                ? "The one-week outlook remains balanced, favoring patience."
+                : greedScore >= 40
+                  ? "The score suggests waiting for stronger confirmation over the next week."
+                  : "Weak score conditions support trimming over the one-week horizon.",
+        },
+      
+        oneMonth: {
+          action:
+            greedScore >= 70
+              ? "BUY"
+              : greedScore >= 50
+                ? "HOLD"
+                : greedScore >= 35
+                  ? "WAIT"
+                  : "TRIM",
+          reason:
+            greedScore >= 70
+              ? "The current score supports a constructive one-month position."
+              : greedScore >= 50
+                ? "The one-month outlook is neutral enough to justify holding."
+                : greedScore >= 35
+                  ? "The score favors waiting for stronger medium-term confirmation."
+                  : "Weak medium-term conditions support reducing exposure.",
+        },
+      
+        oneYear: {
+          action:
+            greedScore >= 65
               ? "BUY"
               : greedScore >= 45
                 ? "HOLD"
                 : greedScore >= 30
                   ? "WAIT"
                   : "TRIM",
-      
-        oneWeek:
-          greedScore >= 75
-            ? "BUY"
-            : greedScore >= 55
-              ? "HOLD"
-              : greedScore >= 40
-                ? "WAIT"
-                : "TRIM",
-      
-        oneMonth:
-          greedScore >= 70
-            ? "BUY"
-            : greedScore >= 50
-              ? "HOLD"
-              : greedScore >= 35
-                ? "WAIT"
-                : "TRIM",
-      
-        oneYear:
-          greedScore >= 65
-            ? "BUY"
-            : greedScore >= 45
-              ? "HOLD"
-              : greedScore >= 30
-                ? "WAIT"
-                : "TRIM",
+          reason:
+            greedScore >= 65
+              ? "The score supports a positive long-term stance."
+              : greedScore >= 45
+                ? "The long-term outlook remains balanced, favoring a hold."
+                : greedScore >= 30
+                  ? "The score suggests waiting before taking a long-term position."
+                  : "Weak long-term conditions support reducing exposure.",
+        },
       },
     };
   }

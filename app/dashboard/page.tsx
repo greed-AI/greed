@@ -16,6 +16,7 @@ import { addWatchlistItem, getWatchlistItems, deleteWatchlistItem } from "@/lib/
 import { buildWhyContent } from "@/lib/decision-why";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import type { WatchlistItem } from "@/lib/dashboard-types";
 
 type RecentAnalysisItem = {
   ticker: string;
@@ -24,12 +25,6 @@ type RecentAnalysisItem = {
   riskLevel: string;
 };
 
-type WatchlistItem = {
-  ticker: string;
-  company: string;
-  greedScore: number;
-  risk: string;
-};
 
 type ViewState = "idle" | "loading" | "result";
 
@@ -55,8 +50,16 @@ export default function DashboardPage() {
   const [ticker, setTicker] = useState("");
   const [viewState, setViewState] = useState<ViewState>("idle");
   const [result, setResult] = useState<AnalysisResponse | null>(null);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [recentHistory, setRecentHistory] = useState<RecentAnalysisItem[]>([]);
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
+  const [dailyUsage, setDailyUsage] = useState<{
+    used: number;
+    remaining: number;
+    limit: number;
+    allowed: boolean;
+  } | null>(null);
+  const [membership, setMembership] = useState<"FREE" | "ROYAL">("FREE");
   const [userName, setUserName] = useState<string | undefined>();
   const [signingOut, setSigningOut] = useState(false);
   const analysisRef = useRef<HTMLDivElement>(null);
@@ -84,6 +87,46 @@ export default function DashboardPage() {
     });
   }, []);
   
+  async function loadDailyUsage() {
+    try {
+      const response = await fetch("/api/daily-usage", {
+        cache: "no-store",
+      });
+  
+      if (!response.ok) {
+        return;
+      }
+  
+      const data = await response.json();
+  
+      setDailyUsage(data);
+    } catch (error) {
+      console.error("Failed to load daily usage:", error);
+    }
+  }
+
+  async function loadMembership() {
+    try {
+      const response = await fetch("/api/membership", {
+        cache: "no-store",
+      });
+  
+      if (!response.ok) {
+        return;
+      }
+  
+      const data = await response.json();
+  
+      setMembership(data.membership);
+    } catch (error) {
+      console.error("Failed to load membership:", error);
+    }
+  }
+  
+  useEffect(() => {
+    void loadDailyUsage();
+    void loadMembership();
+  }, []);
   function addToHistory(analysis: StockAnalysis) {
     const entry: RecentAnalysisItem = {
       ticker: analysis.ticker,
@@ -112,11 +155,15 @@ export default function DashboardPage() {
 
     try {
       const whyContent = buildWhyContent(analysis);
+      const watchlistWhy = {
+        ...whyContent,
+        strategy: analysis.strategy,
+      };
 
 console.log("WATCHLIST SAVE DATA:", {
   ticker: analysis.ticker,
   confidence: analysis.confidence,
-  why: whyContent,
+  why: watchlistWhy,
 });
 await addWatchlistItem({
   userId: user.id,
@@ -125,7 +172,8 @@ await addWatchlistItem({
   greedScore: analysis.greedScore,
   risk: analysis.risk,
   confidence: analysis.confidence,
-  why: whyContent,
+  why: watchlistWhy,
+  action: analysis.strategy.today.action,
 });
     } catch (error) {
       console.error(error);
@@ -145,6 +193,7 @@ await addWatchlistItem({
           risk: analysis.risk,
           confidence: analysis.confidence,
           why: buildWhyContent(analysis),
+          action: analysis.strategy.today.action,
         },
       ];
     });
@@ -165,33 +214,54 @@ await addWatchlistItem({
     }
   }
 
-  function handleAnalyze(event: FormEvent) {
-    event.preventDefault();
-    if (!ticker.trim()) return;
-
+  function runAnalysis(tickerToAnalyze: string) {
+    const normalizedTicker = tickerToAnalyze.trim().toUpperCase();
+  
+    if (!normalizedTicker) return;
+  
+    setTicker(normalizedTicker);
     setViewState("loading");
     setResult(null);
-
+    setAnalysisError(null);
+  
     void (async () => {
-      const [analysis] = await Promise.all([
-        fetchStockAnalysis(ticker).catch(() => ({
-          ...generateDemoAnalysis(ticker),
-          isDemo: true,
-        })),
-        new Promise((resolve) => setTimeout(resolve, 1000)),
-      ]);
-
-      setResult(analysis);
-      addToHistory(analysis);
-      setViewState("result");
-
-      requestAnimationFrame(() => {
-        analysisRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
+      try {
+        const [analysis] = await Promise.all([
+          fetchStockAnalysis(normalizedTicker),
+          new Promise((resolve) => setTimeout(resolve, 1000)),
+        ]);
+  
+        setResult(analysis);
+        addToHistory(analysis);
+        setViewState("result");
+  
+        await loadDailyUsage();
+  
+        requestAnimationFrame(() => {
+          analysisRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
         });
-      });
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Unable to analyze this ticker.";
+      
+        setAnalysisError(message);
+        setViewState("idle");
+      }
     })();
+  }
+  
+  function handleAnalyze(event: FormEvent) {
+    event.preventDefault();
+    runAnalysis(ticker);
+  }
+  
+  function handleOpenWatchlistAnalysis(tickerToAnalyze: string) {
+    runAnalysis(tickerToAnalyze);
   }
 
   async function handleSignOut() {
@@ -226,8 +296,67 @@ await addWatchlistItem({
       <main className="relative z-10 mx-auto w-full max-w-2xl px-6 pb-16 sm:px-8">
         <div className="flex flex-col gap-10">
           <GreetingSection userName={userName} />
-          <AIBriefCard />
-          <TopOpportunityCard />
+
+  <section>
+  <div className="rounded-2xl border border-gold/20 bg-white/[0.025] p-5">
+    {membership === "ROYAL" ? (
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-gold/60">
+            Royal 1000 Membership
+          </p>
+
+          <p className="mt-2 text-2xl font-light text-white">
+            Royal Member
+          </p>
+
+          <p className="mt-1 text-sm text-white/40">
+            Unlimited AI analyses are active.
+          </p>
+        </div>
+
+        <div className="rounded-full border border-gold/30 bg-gold/10 px-4 py-2 text-xs font-medium uppercase tracking-[0.16em] text-gold-light">
+          Unlimited
+        </div>
+      </div>
+    ) : dailyUsage ? (
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-gold/60">
+            Today&apos;s Free Analyses
+          </p>
+
+          <p className="mt-2 text-2xl font-light text-white">
+            {dailyUsage.used} / {dailyUsage.limit} Used
+          </p>
+
+          <p className="mt-1 text-sm text-white/40">
+            {dailyUsage.remaining} remaining today
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {Array.from({ length: dailyUsage.limit }).map((_, index) => (
+            <span
+              key={index}
+              className={`h-2.5 w-10 rounded-full ${
+                index < dailyUsage.used
+                  ? "bg-gold"
+                  : "bg-white/10"
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+    ) : (
+      <p className="text-sm text-white/40">
+        Loading membership information...
+      </p>
+    )}
+  </div>
+</section>
+          <AIBriefCard watchlist={watchlist} />
+          <TopOpportunityCard watchlist={watchlist} />
           <WatchlistChangesSection />
           <MarketPulseSection />
           <AnalyzeSection
@@ -235,8 +364,28 @@ await addWatchlistItem({
             onTickerChange={setTicker}
             onSubmit={handleAnalyze}
             isLoading={viewState === "loading"}
+            disabled={
+              membership !== "ROYAL" &&
+              !!dailyUsage &&
+              dailyUsage.used >= dailyUsage.limit
+            }
+            showUpgrade={
+              membership !== "ROYAL" &&
+              !!dailyUsage &&
+              dailyUsage.used >= dailyUsage.limit
+            }
           />
+{analysisError && (
+  <div className="rounded-2xl border border-red-400/20 bg-red-400/[0.06] p-4">
+    <p className="text-sm font-medium text-red-300">
+      {analysisError}
+    </p>
 
+    <p className="mt-2 text-xs leading-relaxed text-white/45">
+      Enter a ticker symbol such as AAPL, TSLA, NVDA, or MSFT.
+    </p>
+  </div>
+)}
           <div ref={analysisRef} className="flex flex-col gap-6">
             <AnalysisPanel
               viewState={viewState}
@@ -251,6 +400,7 @@ await addWatchlistItem({
           <MyWatchlistSection
   watchlist={watchlist}
   onRemove={(ticker) => void removeFromWatchlist(ticker)}
+  onOpenAnalysis={handleOpenWatchlistAnalysis}
 />
         </div>
       </main>

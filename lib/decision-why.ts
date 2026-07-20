@@ -17,6 +17,10 @@ const LEVEL_TEXT: Record<RadarLevel, string> = {
 };
 
 export function buildWhyContent(stock: StockAnalysis): WhyContent {
+  if (stock.why) {
+    return stock.why;
+  }
+
   const radar = buildGreedRadar(stock);
 
   return {

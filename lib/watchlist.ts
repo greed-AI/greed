@@ -8,6 +8,7 @@ type WatchlistInput = {
   risk: string;
   confidence: number;
   why: unknown;
+  action: string;
 };
 
 export async function addWatchlistItem(input: WatchlistInput) {
@@ -23,6 +24,7 @@ export async function addWatchlistItem(input: WatchlistInput) {
       risk: input.risk,
       confidence: input.confidence,
       why: input.why,
+      action: input.action,
     })
     .select()
     .single();
@@ -38,7 +40,7 @@ export async function getWatchlistItems(userId: string) {
   
     const { data, error } = await supabase
       .from("watchlists")
-      .select("ticker, company, greed_score, risk, confidence, why")
+      .select("ticker, company, greed_score, risk, confidence, why, action")
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
   
@@ -53,6 +55,7 @@ export async function getWatchlistItems(userId: string) {
       risk: item.risk,
       confidence: item.confidence,
       why: item.why,
+      action: item.action,
     }));
   }
   export async function deleteWatchlistItem(userId: string, ticker: string) {

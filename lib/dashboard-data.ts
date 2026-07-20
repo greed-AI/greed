@@ -40,6 +40,24 @@ const NVDA_STOCK: StockAnalysis = {
   risk: "High",
   confidence: 69,
   summary: "Exceptional momentum, size positions carefully.",
+  strategy: {
+    today: {
+      action: "HOLD",
+      reason: "Very strong momentum is balanced by high risk.",
+    },
+    oneWeek: {
+      action: "BUY",
+      reason: "Strong momentum supports short-term continuation.",
+    },
+    oneMonth: {
+      action: "HOLD",
+      reason: "High risk limits aggressive medium-term positioning.",
+    },
+    oneYear: {
+      action: "HOLD",
+      reason: "Confidence is not high enough for stronger long-term conviction.",
+    },
+  },
 };
 
 const TSLA_STOCK: StockAnalysis = {
@@ -50,6 +68,24 @@ const TSLA_STOCK: StockAnalysis = {
   risk: "High",
   confidence: 76,
   summary: "Strong momentum with elevated risk.",
+  strategy: {
+    today: {
+      action: "HOLD",
+      reason: "Strong momentum is offset by high immediate risk.",
+    },
+    oneWeek: {
+      action: "BUY",
+      reason: "Strong momentum supports short-term trend continuation.",
+    },
+    oneMonth: {
+      action: "HOLD",
+      reason: "High risk calls for balanced medium-term positioning.",
+    },
+    oneYear: {
+      action: "HOLD",
+      reason: "Confidence supports patience rather than aggressive conviction.",
+    },
+  },
 };
 
 const AAPL_STOCK: StockAnalysis = {
@@ -59,7 +95,25 @@ const AAPL_STOCK: StockAnalysis = {
   momentum: "Moderate",
   risk: "Low",
   confidence: 88,
-  summary: "Steady institutional support, balanced outlook.",
+  summary: "Moderate momentum with low risk and high confidence.",
+  strategy: {
+    today: {
+      action: "HOLD",
+      reason: "Moderate momentum does not support an aggressive immediate action.",
+    },
+    oneWeek: {
+      action: "HOLD",
+      reason: "The short-term signal remains balanced.",
+    },
+    oneMonth: {
+      action: "BUY",
+      reason: "Low risk and high confidence support medium-term positioning.",
+    },
+    oneYear: {
+      action: "BUY",
+      reason: "High confidence and low risk support longer-term conviction.",
+    },
+  },
 };
 
 const MSFT_STOCK: StockAnalysis = {
@@ -69,7 +123,25 @@ const MSFT_STOCK: StockAnalysis = {
   momentum: "Strong",
   risk: "Low",
   confidence: 84,
-  summary: "Durable cloud-driven growth with contained risk.",
+  summary: "Strong momentum with low risk and high confidence.",
+  strategy: {
+    today: {
+      action: "BUY",
+      reason: "Strong momentum and low risk support the immediate signal.",
+    },
+    oneWeek: {
+      action: "BUY",
+      reason: "Strong momentum supports short-term continuation.",
+    },
+    oneMonth: {
+      action: "BUY",
+      reason: "Low risk and high confidence support medium-term positioning.",
+    },
+    oneYear: {
+      action: "BUY",
+      reason: "High confidence supports longer-term conviction.",
+    },
+  },
 };
 
 const GOOG_STOCK: StockAnalysis = {
@@ -79,7 +151,25 @@ const GOOG_STOCK: StockAnalysis = {
   momentum: "Moderate",
   risk: "Medium",
   confidence: 79,
-  summary: "AI upside balanced with regulatory headwinds.",
+  summary: "Moderate momentum with balanced risk.",
+  strategy: {
+    today: {
+      action: "WAIT",
+      reason: "Moderate momentum and medium risk do not provide a strong immediate signal.",
+    },
+    oneWeek: {
+      action: "HOLD",
+      reason: "The short-term signal remains balanced.",
+    },
+    oneMonth: {
+      action: "HOLD",
+      reason: "Medium risk supports cautious positioning.",
+    },
+    oneYear: {
+      action: "HOLD",
+      reason: "Confidence supports patience without stronger long-term conviction.",
+    },
+  },
 };
 
 export const AI_BRIEF_INSIGHTS = [

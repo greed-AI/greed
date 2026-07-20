@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { CardShell, SectionLabel } from "@/app/components/ui/primitives";
 import { FormEvent } from "react";
 
@@ -8,6 +9,8 @@ type AnalyzeSectionProps = {
   onTickerChange: (value: string) => void;
   onSubmit: (event: FormEvent) => void;
   isLoading: boolean;
+  disabled?: boolean;
+  showUpgrade?: boolean;
 };
 
 export function AnalyzeSection({
@@ -15,6 +18,8 @@ export function AnalyzeSection({
   onTickerChange,
   onSubmit,
   isLoading,
+  disabled,
+  showUpgrade,
 }: AnalyzeSectionProps) {
   return (
     <section id="analyze">
@@ -34,7 +39,7 @@ export function AnalyzeSection({
           />
           <button
             type="submit"
-            disabled={!ticker.trim() || isLoading}
+            disabled={!ticker.trim() || isLoading || disabled}
             className="group relative w-full shrink-0 overflow-hidden rounded-full px-10 py-4 text-sm font-medium tracking-wide text-black transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100 sm:w-auto"
           >
             <span className="absolute inset-0 bg-linear-to-r from-gold-dark via-gold-light to-gold animate-shimmer bg-size-[200%_auto]" />
@@ -60,6 +65,24 @@ export function AnalyzeSection({
             </span>
           </button>
         </form>
+        {showUpgrade && (
+  <div className="mt-4 rounded-2xl border border-gold/20 bg-gold/5 p-4">
+    <p className="text-sm text-white/70">
+      You've reached today's free analysis limit.
+    </p>
+
+    <p className="mt-1 text-xs text-white/45">
+      Upgrade to Royal 1000 for unlimited AI analyses.
+    </p>
+
+    <Link
+      href="/pricing"
+      className="mt-4 inline-flex rounded-full bg-gold px-5 py-2 text-sm font-medium text-black transition hover:opacity-90"
+    >
+      Upgrade to Royal
+    </Link>
+  </div>
+)}
       </CardShell>
     </section>
   );

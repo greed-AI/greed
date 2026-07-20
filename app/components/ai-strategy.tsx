@@ -47,7 +47,7 @@ const ACTION_COLORS: Record<
 };
 
 function StrategyCard({ item }: { item: AIStrategyItem }) {
-  const colors = ACTION_COLORS[item.action];
+  const colors = ACTION_COLORS[item.action] ?? ACTION_COLORS.HOLD;
 
   return (
     <div
@@ -81,40 +81,121 @@ function StrategyCard({ item }: { item: AIStrategyItem }) {
     </div>
   );
 }
+function getStrategyIntensity(
+  action: AIStrategyItem["action"],
+): AIStrategyItem["intensity"] {
+  switch (action) {
+    case "STRONG BUY":
+      return 5;
+    case "ACCUMULATE":
+    case "BUY":
+      return 4;
+    case "HOLD":
+      return 3;
+    case "WATCH":
+    case "WAIT":
+      return 2;
+    case "TRIM":
+    case "EXIT":
+      return 1;
+    default:
+      return 3;
+  }
+}
+function normalizeStrategyDetail(
+  value: unknown,
+  fallbackReason: string,
+): {
+  action: AIStrategyItem["action"];
+  reason: string;
+} {
+  if (
+    typeof value === "string" &&
+    value in ACTION_COLORS
+  ) {
+    return {
+      action: value as AIStrategyItem["action"],
+      reason: fallbackReason,
+    };
+  }
 
+  if (value && typeof value === "object") {
+    const detail = value as {
+      action?: unknown;
+      reason?: unknown;
+    };
+
+    if (
+      typeof detail.action === "string" &&
+      detail.action in ACTION_COLORS
+    ) {
+      return {
+        action: detail.action as AIStrategyItem["action"],
+        reason:
+          typeof detail.reason === "string" && detail.reason.trim()
+            ? detail.reason
+            : fallbackReason,
+      };
+    }
+  }
+
+  return {
+    action: "HOLD",
+    reason: "Strategy data is temporarily unavailable.",
+  };
+}
 export function AIStrategySection({
   strategy,
 }: {
   strategy: AIStrategy;
 }) {
+  const today = normalizeStrategyDetail(
+    strategy.today,
+    "Short-term strategy based on the current Greed analysis.",
+  );
+  
+  const oneWeek = normalizeStrategyDetail(
+    strategy.oneWeek,
+    "Weekly strategy based on the current Greed analysis.",
+  );
+  
+  const oneMonth = normalizeStrategyDetail(
+    strategy.oneMonth,
+    "Monthly strategy based on the current Greed analysis.",
+  );
+  
+  const oneYear = normalizeStrategyDetail(
+    strategy.oneYear,
+    "Long-term strategy based on the current Greed analysis.",
+  );
   const strategyItems: AIStrategyItem[] = [
     {
       horizon: "today",
       label: "Today",
-      action: strategy.today,
-      signal: "AI-generated short-term strategy",
-      intensity: 3,
+      action: today.action,
+      signal: today.reason,
+      intensity: getStrategyIntensity(today.action),
     },
     {
       horizon: "oneWeek",
       label: "1 Week",
-      action: strategy.oneWeek,
-      signal: "AI-generated weekly strategy",
-      intensity: 3,
+      action: oneWeek.action,
+      signal: oneWeek.reason,
+      intensity: getStrategyIntensity(oneWeek.action),
     },
     {
       horizon: "oneMonth",
       label: "1 Month",
-      action: strategy.oneMonth,
-      signal: "AI-generated monthly strategy",
-      intensity: 3,
+      action: oneMonth.action,
+      signal: oneMonth.reason,
+      intensity: getStrategyIntensity(oneMonth.action),
     },
     {
       horizon: "oneYear",
       label: "1 Year",
-      action: strategy.oneYear,
-      signal: "AI-generated long-term strategy",
-      intensity: 3,
+      action: oneYear.action,
+      signal: oneYear.reason,
+      intensity: getStrategyIntensity(oneYear.action),
     },
   ];
   return (

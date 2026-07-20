@@ -5,12 +5,17 @@ export type StrategyAction =
   | "TRIM"
   | "STRONG BUY";
   
+  export type StrategyDetail = {
+    action: StrategyAction;
+    reason: string;
+  };
+  
 
   export type AIStrategy = {
-    today: StrategyAction;
-    oneWeek: StrategyAction;
-    oneMonth: StrategyAction;
-    oneYear: StrategyAction;
+    today: StrategyDetail;
+    oneWeek: StrategyDetail;
+    oneMonth: StrategyDetail;
+    oneYear: StrategyDetail;
   };
 
   export type AIWhyContent = {
