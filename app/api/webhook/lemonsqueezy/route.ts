@@ -164,12 +164,23 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const subscriptionId = payload.data?.id ?? null;
+    const customerId = payload.data?.attributes?.customer_id?.toString() ?? null;
+    const renewsAt = payload.data?.attributes?.renews_at ?? null;
+    const endsAt = payload.data?.attributes?.ends_at ?? null;
+    
     const { error } = await supabaseAdmin
-    .from("profiles")
-    .update({
-      membership: membership,
-    })
-    .eq("user_id", userId);
+      .from("profiles")
+      .update({
+        membership,
+        lemon_customer_id: customerId,
+        lemon_subscription_id: subscriptionId,
+        subscription_status: subscriptionStatus ?? null,
+        renews_at: renewsAt,
+        ends_at: endsAt,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", userId);
 
     if (error) {
       console.error("Failed to update membership:", error);
