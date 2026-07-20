@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -51,7 +52,12 @@ export default async function BillingPage() {
         <p className="mb-3 text-sm tracking-[0.35em] text-[#b99a52]">
           GREED
         </p>
-
+        <Link
+  href="/dashboard"
+  className="mb-6 inline-block text-sm text-white/50 transition hover:text-[#d6ba72]"
+>
+  ← Back to Dashboard
+</Link>
         <h1 className="text-4xl font-light">Billing</h1>
 
         <p className="mt-3 text-sm text-neutral-400">
