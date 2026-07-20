@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
           code: "DAILY_ANALYSIS_LIMIT_REACHED",
           used: usage.used,
           remaining: usage.remaining,
-          limit: 3,
+          limit: 1
         },
         {
           status: 429,
