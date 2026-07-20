@@ -4,7 +4,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
-const FREE_DAILY_LIMIT = 3;
+const FREE_DAILY_LIMIT = 1;
 
 export async function GET() {
   try {

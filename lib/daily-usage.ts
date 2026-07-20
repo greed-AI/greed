@@ -39,7 +39,7 @@ export async function consumeDailyAnalysis(): Promise<DailyUsageResult> {
     };
   }
 
-  // FREE 회원만 하루 3회 사용량을 차감한다.
+  // FREE 회원만 하루 1회 사용량을 차감한다.
   const { data, error } = await supabase.rpc(
     "consume_daily_analysis",
   );
