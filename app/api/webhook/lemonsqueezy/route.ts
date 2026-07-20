@@ -165,11 +165,11 @@ export async function POST(request: NextRequest) {
     }
 
     const { error } = await supabaseAdmin
-      .from("profiles")
-      .update({
-        membership,
-      })
-      .eq("id", userId);
+    .from("profiles")
+    .update({
+      membership: membership,
+    })
+    .eq("user_id", userId);
 
     if (error) {
       console.error("Failed to update membership:", error);
