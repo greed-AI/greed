@@ -17,6 +17,7 @@ import { buildWhyContent } from "@/lib/decision-why";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { WatchlistItem } from "@/lib/dashboard-types";
+import { PremiumUpgradeModal } from "@/app/components/ui/premium-upgrade-modal";
 
 type RecentAnalysisItem = {
   ticker: string;
@@ -63,6 +64,8 @@ export default function DashboardPage() {
   const [userName, setUserName] = useState<string | undefined>();
   const [signingOut, setSigningOut] = useState(false);
   const [showWatchlistUpgrade, setShowWatchlistUpgrade] = useState(false);
+  const [premiumFeature, setPremiumFeature] =
+  useState<"watchlist" | "strategy" | "radar">("watchlist");
   const analysisRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -154,6 +157,7 @@ export default function DashboardPage() {
     if (alreadyExists) return;
 
     if (membership === "FREE" && watchlist.length >= 3) {
+      setPremiumFeature("watchlist");
       setShowWatchlistUpgrade(true);
       return;
     }
@@ -408,8 +412,13 @@ await addWatchlistItem({
               result={result}
               recentHistory={recentHistory}
               watchlist={watchlist}
+              membership={membership}
               onAddToWatchlist={addToWatchlist}
               onRemoveFromWatchlist={removeFromWatchlist}
+              onPremiumFeatureClick={(feature) => {
+                setPremiumFeature(feature);
+                setShowWatchlistUpgrade(true);
+              }}
             />
           </div>
 
@@ -420,46 +429,13 @@ await addWatchlistItem({
 />
         </div>
       </main>
-      {showWatchlistUpgrade && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-6 backdrop-blur-sm">
-    <div className="w-full max-w-md rounded-3xl border border-gold/30 bg-[#120f09] p-6 shadow-[0_0_80px_rgba(201,169,98,0.16)]">
-      <div className="flex h-12 w-12 items-center justify-center rounded-full border border-gold/30 bg-gold/10 text-xl">
-        🔒
-      </div>
 
-      <p className="mt-5 text-[10px] font-medium uppercase tracking-[0.24em] text-gold/70">
-        Royal Exclusive
-      </p>
+      <PremiumUpgradeModal
+  open={showWatchlistUpgrade}
+  feature={premiumFeature}
+  onClose={() => setShowWatchlistUpgrade(false)}
+/>
 
-      <h2 className="mt-2 text-2xl font-light text-white">
-        Unlock unlimited watchlists
-      </h2>
-
-      <p className="mt-3 text-sm leading-relaxed text-white/50">
-        Free members can save up to 3 stocks. Upgrade to Royal to track
-        unlimited opportunities.
-      </p>
-
-      <div className="mt-6 flex flex-col gap-3">
-        <button
-          type="button"
-          onClick={() => router.push("/pricing")}
-          className="rounded-full bg-gold px-5 py-3 text-sm font-medium text-black transition hover:bg-gold-light"
-        >
-          Upgrade to Royal
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setShowWatchlistUpgrade(false)}
-          className="rounded-full border border-white/10 px-5 py-3 text-sm text-white/50 transition hover:border-white/20 hover:text-white"
-        >
-          Maybe Later
-        </button>
-      </div>
-    </div>
-  </div>
-)}
       <footer className="relative z-10 mx-auto w-full max-w-2xl px-6 pb-8 sm:px-8">
         <p className="text-center text-xs text-white/20">
           Not financial advice. For informational purposes only.

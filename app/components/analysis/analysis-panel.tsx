@@ -33,8 +33,14 @@ type AnalysisPanelProps = {
   result: AnalysisResponse | null;
   recentHistory: RecentAnalysisItem[];
   watchlist: WatchlistItem[];
+
+  membership: "FREE" | "ROYAL";
+
   onAddToWatchlist: (analysis: StockAnalysis) => void;
   onRemoveFromWatchlist: (ticker: string) => void;
+  onPremiumFeatureClick: (
+    feature: "watchlist" | "strategy" | "radar",
+  ) => void;
 };
 
 export function AnalysisPanel({
@@ -42,8 +48,10 @@ export function AnalysisPanel({
   result,
   recentHistory,
   watchlist,
+  membership,
   onAddToWatchlist,
   onRemoveFromWatchlist,
+  onPremiumFeatureClick,
 }: AnalysisPanelProps) {
   if (
     viewState === "idle" &&
@@ -66,7 +74,11 @@ export function AnalysisPanel({
             )}
             onAddToWatchlist={() => onAddToWatchlist(result)}
           />
-          <DecisionPlatformSection result={result} />
+          <DecisionPlatformSection
+  result={result}
+  membership={membership}
+  onPremiumFeatureClick={onPremiumFeatureClick}
+/>
         </>
       )}
 
@@ -112,7 +124,17 @@ function RecentAnalysisSection({ items }: { items: RecentAnalysisItem[] }) {
   );
 }
 
-function DecisionPlatformSection({ result }: { result: StockAnalysis }) {
+function DecisionPlatformSection({
+  result,
+  membership,
+  onPremiumFeatureClick,
+}: {
+  result: StockAnalysis;
+  membership: "FREE" | "ROYAL";
+  onPremiumFeatureClick: (
+    feature: "watchlist" | "strategy" | "radar",
+  ) => void;
+}) {
   const decision = buildGreedDecision(result);
 
   return (
@@ -134,7 +156,11 @@ function DecisionPlatformSection({ result }: { result: StockAnalysis }) {
           why={buildWhyContent(result)}
         />
         <GreedRadarSection analysis={result} />
-        <AIStrategySection strategy={result.strategy} />
+        <AIStrategySection
+  strategy={result.strategy}
+  membership={membership}
+  onLockedClick={() => onPremiumFeatureClick("strategy")}
+/>
       </div>
     </section>
   );

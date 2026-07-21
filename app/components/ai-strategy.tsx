@@ -46,38 +46,80 @@ const ACTION_COLORS: Record<
   },
 };
 
-function StrategyCard({ item }: { item: AIStrategyItem }) {
+function StrategyCard({
+  item,
+  locked = false,
+  onLockedClick,
+}: {
+  item: AIStrategyItem;
+  locked?: boolean;
+  onLockedClick?: () => void;
+}) {
   const colors = ACTION_COLORS[item.action] ?? ACTION_COLORS.HOLD;
 
   return (
     <div
-      className={`relative overflow-hidden rounded-xl border ${colors.border} bg-white/2`}
-    >
+  role={locked ? "button" : undefined}
+  tabIndex={locked ? 0 : undefined}
+  onClick={locked ? onLockedClick : undefined}
+  onKeyDown={
+    locked
+      ? (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onLockedClick?.();
+          }
+        }
+      : undefined
+  }
+  className={`relative overflow-hidden rounded-xl border ${colors.border} bg-white/2 ${
+    locked
+      ? "cursor-pointer transition hover:border-gold/40 hover:bg-white/4"
+      : ""
+  }`}
+>
       <div
         className={`pointer-events-none absolute inset-0 bg-linear-to-br ${colors.glow} to-transparent`}
         aria-hidden="true"
       />
       <div className="relative px-4 py-3.5">
-        <p className="text-[10px] font-medium uppercase tracking-wider text-white/35">
-          {item.label}
-        </p>
-        <p
-          className={`mt-1.5 text-sm font-medium tracking-wide ${colors.text}`}
-        >
-          {item.action}
-        </p>
-        <p className="mt-1 text-xs text-white/40">{item.signal}</p>
-        <div className="mt-3 flex gap-0.5">
-          {([1, 2, 3, 4, 5] as const).map((step) => (
-            <span
-              key={step}
-              className={`h-0.5 flex-1 rounded-full ${
-                step <= item.intensity ? "bg-gold/70" : "bg-white/8"
-              }`}
-            />
-          ))}
-        </div>
-      </div>
+  <div className={locked ? "select-none blur-[5px]" : ""}>
+    <p className="text-[10px] font-medium uppercase tracking-wider text-white/35">
+      {item.label}
+    </p>
+
+    <p
+      className={`mt-1.5 text-sm font-medium tracking-wide ${colors.text}`}
+    >
+      {item.action}
+    </p>
+
+    <p className="mt-1 text-xs text-white/40">{item.signal}</p>
+
+    <div className="mt-3 flex gap-0.5">
+      {([1, 2, 3, 4, 5] as const).map((step) => (
+        <span
+          key={step}
+          className={`h-0.5 flex-1 rounded-full ${
+            step <= item.intensity ? "bg-gold/70" : "bg-white/8"
+          }`}
+        />
+      ))}
+    </div>
+  </div>
+
+  {locked && (
+    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/25 px-3 text-center backdrop-blur-[1px]">
+      <span className="text-base" aria-hidden="true">
+        🔒
+      </span>
+
+      <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.14em] text-gold-light">
+        Royal Only
+      </p>
+    </div>
+  )}
+</div>
     </div>
   );
 }
@@ -146,8 +188,12 @@ function normalizeStrategyDetail(
 }
 export function AIStrategySection({
   strategy,
+  membership,
+  onLockedClick,
 }: {
   strategy: AIStrategy;
+  membership: "FREE" | "ROYAL";
+  onLockedClick?: () => void;
 }) {
   const today = normalizeStrategyDetail(
     strategy.today,
@@ -216,9 +262,19 @@ export function AIStrategySection({
         </div>
 
         <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {strategyItems.map((item) => (
-            <StrategyCard key={item.horizon} item={item} />
-          ))}
+        {strategyItems.map((item) => {
+  const locked =
+    membership === "FREE" && item.horizon !== "oneYear";
+
+  return (
+    <StrategyCard
+  key={item.horizon}
+  item={item}
+  locked={locked}
+  onLockedClick={onLockedClick}
+/>
+  );
+})}
         </div>
       </div>
     </div>
