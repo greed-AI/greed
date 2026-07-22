@@ -30,7 +30,15 @@ function LevelRating({ level }: { level: RadarLevel }) {
   );
 }
 
-export function GreedRadarSection({ analysis }: { analysis: StockAnalysis }) {
+export function GreedRadarSection({
+  analysis,
+  membership,
+  onLockedClick,
+}: {
+  analysis: StockAnalysis;
+  membership: "FREE" | "ROYAL";
+  onLockedClick?: () => void;
+}) {
   const scores = buildGreedRadar(analysis);
   const metrics = radarToMetrics(scores);
 
@@ -52,22 +60,67 @@ export function GreedRadarSection({ analysis }: { analysis: StockAnalysis }) {
         </div>
 
         <div className="mt-5 flex flex-col gap-4">
-          {metrics.map((metric) => (
-            <div
-              key={metric.key}
-              className="flex items-center justify-between gap-4 rounded-xl border border-white/5 bg-black/20 px-4 py-3"
-            >
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-white/90">
-                  {metric.label}
-                </p>
-                <p className="mt-0.5 text-[10px] uppercase tracking-wider text-white/30">
-                  {LEVEL_LABELS[metric.level]}
-                </p>
-              </div>
-              <LevelRating level={metric.level} />
-            </div>
-          ))}
+        {metrics.map((metric) => {
+  const locked =
+    membership === "FREE" &&
+    ["timing", "risk", "value"].includes(metric.key);
+
+  return (
+    <div
+      key={metric.key}
+      role={locked ? "button" : undefined}
+      tabIndex={locked ? 0 : undefined}
+      onClick={locked ? onLockedClick : undefined}
+      onKeyDown={
+        locked
+          ? (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onLockedClick?.();
+              }
+            }
+          : undefined
+      }
+      className={`relative flex items-center justify-between gap-4 overflow-hidden rounded-xl border px-4 py-3 ${
+        locked
+          ? "cursor-pointer border-gold/20 bg-gold/[0.03] transition hover:border-gold/40"
+          : "border-white/5 bg-black/20"
+      }`}
+    >
+      <div
+        className={`flex w-full items-center justify-between gap-4 ${
+          locked ? "select-none blur-[4px]" : ""
+        }`}
+      >
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-white/90">
+            {metric.label}
+          </p>
+
+          <p className="mt-0.5 text-[10px] uppercase tracking-wider text-white/30">
+            {LEVEL_LABELS[metric.level]}
+          </p>
+        </div>
+
+        <LevelRating level={metric.level} />
+      </div>
+
+      {locked && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[1px]">
+          <div className="flex items-center gap-2">
+            <span className="text-sm" aria-hidden="true">
+              🔒
+            </span>
+
+            <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-gold-light">
+              Royal Only
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+})}
         </div>
       </div>
     </div>

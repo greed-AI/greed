@@ -155,7 +155,11 @@ function DecisionPlatformSection({
           summary={result.summary}
           why={buildWhyContent(result)}
         />
-        <GreedRadarSection analysis={result} />
+        <GreedRadarSection
+  analysis={result}
+  membership={membership}
+  onLockedClick={() => onPremiumFeatureClick("radar")}
+/>
         <AIStrategySection
   strategy={result.strategy}
   membership={membership}
